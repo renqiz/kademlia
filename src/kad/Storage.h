@@ -48,10 +48,16 @@ namespace kad
 
     void SetData(BufferPtr val) { this->data = val; }
 
+    uint32_t TTL() const        { return this->ttl; }
+
+    void SetTTL(uint32_t val)   { this->ttl = val; }
+
   private:
 
     KeyPtr key;
 
     BufferPtr data;
+
+    uint32_t ttl = 0;
   };
 }

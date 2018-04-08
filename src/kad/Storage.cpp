@@ -37,7 +37,6 @@ namespace kad
 {
   static const TCHAR * STORAGE_ROOT = _T("storage");
 
-
   bool Storage::Save() const
   {
     TSTRING root = Config::RootPath() + PATH_SEPERATOR_STR + STORAGE_ROOT;
