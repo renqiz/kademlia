@@ -27,10 +27,8 @@
 
 #pragma once
 
-#include <map>
 #include "Key.h"
 #include "Buffer.h"
-#include "PlatformUtils.h"
 
 namespace kad
 {
@@ -38,30 +36,28 @@ namespace kad
   {
   public:
 
-    static Storage * Instance();
+    bool Save() const;
 
-  public:
+    bool Load();
 
-    bool Save(KeyPtr key, BufferPtr content, uint32_t ttl = 0);
+    KeyPtr GetKey() const       { return this->key; }
 
-    BufferPtr Load(KeyPtr key);
+    void SetKey(KeyPtr val)     { this->key = val; }
 
-    void Cleanup(bool all = false);
+    BufferPtr GetData() const   { return this->data; }
 
-  private:
+    void SetData(BufferPtr val) { this->data = val; }
 
-    Storage();
+    uint32_t TTL() const        { return this->ttl; }
 
-  private:
-
-    static Storage * instance;
+    void SetTTL(uint32_t val)   { this->ttl = val; }
 
   private:
 
-    TSTRING cacheFolder;
+    KeyPtr key;
 
-    TSTRING dataFolder;
+    BufferPtr data;
 
-    std::multimap<int, KeyPtr> cache;
+    uint32_t ttl = 0;
   };
 }

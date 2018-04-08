@@ -25,95 +25,53 @@
  * =============================================================================
  */
 
-#include <string>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <stdio.h>
-#include "PlatformUtils.h"
 #include "Config.h"
 #include "Storage.h"
 
 namespace kad
 {
-  static const TCHAR * STORAGE_ROOT = _T("storage");
+  Storage * Storage::instance = nullptr;
 
-  bool Storage::Save() const
+
+  Storage * Storage::Instance()
   {
-    TSTRING root = Config::RootPath() + PATH_SEPERATOR_STR + STORAGE_ROOT;
-
-    _tmkdir(root.c_str());
-
-    if (!this->key || !this->data || !this->data->Data() || this->data->Size() == 0)
+    if (unlikely(instance == nullptr))
     {
-      return false;
+      instance = new Storage();
     }
 
-    TSTRING path = root + PATH_SEPERATOR_STR + _TS(this->key->ToString());
-
-    FILE * file = _tfopen(path.c_str(), _T("wb"));
-
-    if (!file)
-    {
-      return false;
-    }
-
-    bool result = false;
-
-    if (this->data->Size() > 0)
-    {
-      result = fwrite(this->data->Data(), 1, this->data->Size(), file) == this->data->Size();
-    }
-
-    fclose(file);
-
-    return result;
+    return instance;
   }
 
 
-  bool Storage::Load()
+  Storage::Storage()
   {
-    TSTRING root = Config::RootPath() + PATH_SEPERATOR_STR + STORAGE_ROOT;
+    TCHAR buffer[PATH_MAX];
 
-    _tmkdir(root.c_str());
+    _stprintf(buffer, _T("%s%s%s%s%s"),
+      Config::RootPath().c_str(),
+      PATH_SEPERATOR_STR,
+      _T("storage"),
+      PATH_SEPERATOR,
+      _T("data")
+    );
 
-    if (!this->key)
-    {
-      return false;
-    }
+    this->dataFolder = buffer;
 
-    TSTRING path = root + PATH_SEPERATOR_STR + _TS(this->key->ToString());
+    _stprintf(buffer, _T("%s%s%s%s%s"),
+      Config::RootPath().c_str(),
+      PATH_SEPERATOR_STR,
+      _T("storage"),
+      PATH_SEPERATOR,
+      _T("cache")
+    );
 
-    struct stat stat_buf;
+    this->cacheFolder = buffer;
+  }
 
-    if (_tstat(path.c_str(), &stat_buf) != 0)
-    {
-      return false;
-    }
 
-    size_t size = stat_buf.st_size;
+  bool Storage::Save(KeyPtr key, BufferPtr content, uint32_t ttl)
+  {
 
-    bool result = false;
-
-    uint8_t * buffer = new uint8_t[size];
-
-    FILE * file = _tfopen(path.c_str(), _T("rb"));
-
-    if (file)
-    {
-      result = fread(buffer, 1, size, file) == size;
-      
-      fclose(file);
-    }
-
-    if (result)
-    {
-      this->data = std::make_shared<Buffer>(buffer, size, false, true);
-    }
-    else
-    {
-      delete[] buffer;
-    }
-
-    return result;
   }
 }
