@@ -76,6 +76,9 @@ namespace kad
       return;
     }
 
+    Storage::Persist()->Initialize(true);
+    Storage::Cache()->Initialize(false);
+
     // TODO: get bootstrp nodes
 
     std::vector<std::pair<KeyPtr, ContactPtr>> nodes;
@@ -301,7 +304,7 @@ namespace kad
 
             auto store = std::unique_ptr<StoreAction>(new StoreAction(this->thread.get(), this->dispatcher.get()));
 
-            store->Initialize(nodes, target, buffer);
+            store->Initialize(nodes, target, buffer, Config::CacheTTL());
 
             if (store->Start())
             {
@@ -369,7 +372,7 @@ namespace kad
 
         auto action = std::unique_ptr<StoreAction>(new StoreAction(this->thread.get(), this->dispatcher.get()));
 
-        action->Initialize(nodes, hash, data);
+        action->Initialize(nodes, hash, data, 0);
 
         action->SetOnCompleteHandler(
           [hash, complete](void * sender, void * args)
@@ -585,15 +588,18 @@ namespace kad
   {
     protocol::FindValue * reqInstr = static_cast<protocol::FindValue *>(request->GetInstruction());
 
-    Storage storage;
+    auto buffer = Storage::Persist()->Load(reqInstr->Key());
 
-    storage.SetKey(reqInstr->Key());
+    if (!buffer)
+    {
+      buffer = Storage::Cache()->Load(reqInstr->Key());
+    }
 
-    if (storage.Load())
+    if (buffer)
     {
       protocol::FindValueResponse * resInstr = new protocol::FindValueResponse();
 
-      resInstr->SetData(storage.GetData());
+      resInstr->SetData(buffer);
 
       this->dispatcher->Send(std::make_shared<Package>(Package::PackageType::Response, Config::NodeId(), request->Id(), from, std::unique_ptr<Instruction>(resInstr)));
     }
@@ -608,13 +614,16 @@ namespace kad
   {
     protocol::Store * reqInstr = static_cast<protocol::Store *>(request->GetInstruction());
 
-    Storage storage;
+    bool result;
 
-    storage.SetKey(reqInstr->GetKey());
-
-    storage.SetData(reqInstr->Data());
-
-    bool result = storage.Save();
+    if (reqInstr->TTL() > 0)
+    {
+      result = Storage::Cache()->Save(reqInstr->GetKey(), reqInstr->Data(), reqInstr->TTL());
+    }
+    else
+    {
+      result = Storage::Persist()->Save(reqInstr->GetKey(), reqInstr->Data(), Config::ReplicateTTL());
+    }
 
     protocol::StoreResponse * resInstr = new protocol::StoreResponse();
 

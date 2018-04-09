@@ -39,6 +39,7 @@ namespace kad
   #define _tmkdir(s) mkdir(s, 0755)
   #define _stprintf sprintf
   #define _tstat stat
+  #define _tunlink unlink
 #endif
 
 using TSTRING = std::basic_string<TCHAR>;

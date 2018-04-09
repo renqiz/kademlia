@@ -55,6 +55,10 @@ namespace kad
 
     static int RefreshInterval()          { return refreshInterval; }
 
+    static uint32_t CacheTTL()            { return cacheTTL; }
+
+    static uint32_t ReplicateTTL()        { return replicateTTL; }
+
   private:
 
     static void InitKey();
@@ -72,5 +76,9 @@ namespace kad
     static bool verbose;
 
     static int refreshInterval;
+
+    static uint32_t cacheTTL;
+
+    static uint32_t replicateTTL;
   };
 }

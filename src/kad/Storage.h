@@ -38,30 +38,42 @@ namespace kad
   {
   public:
 
-    static Storage * Instance();
+    static Storage * Persist();
+
+    static Storage * Cache();
 
   public:
 
-    bool Save(KeyPtr key, BufferPtr content, uint32_t ttl = 0);
+    void Initialize(bool load);
 
-    BufferPtr Load(KeyPtr key);
+    bool Save(KeyPtr key, BufferPtr content, int64_t ttl = 0);
 
-    void Cleanup(bool all = false);
+    void Update(KeyPtr key, int64_t ttl = 0);
 
-  private:
+    BufferPtr Load(KeyPtr key) const;
 
-    Storage();
-
-  private:
-
-    static Storage * instance;
+    void Invalidate();
 
   private:
 
-    TSTRING cacheFolder;
+    Storage(TSTRING folder);
 
-    TSTRING dataFolder;
+  private:
 
-    std::multimap<int, KeyPtr> cache;
+    static TSTRING Mkdir(const TCHAR * name);
+
+  private:
+
+    static Storage * persist;
+
+    static Storage * cache;
+
+  private:
+
+    TSTRING folder;
+
+    std::map<KeyPtr, int64_t, KeyCompare> index;
+
+    std::multimap<int64_t, KeyPtr> rindex;
   };
 }

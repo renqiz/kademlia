@@ -43,6 +43,10 @@ namespace kad
 
   int Config::refreshInterval = 3600000;
 
+  uint32_t Config::cacheTTL = 3600;
+
+  uint32_t Config::replicateTTL = 3600;
+
 
   void Config::Initialize(TSTRING path)
   {
