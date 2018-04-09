@@ -283,4 +283,20 @@ namespace kad
     this->rindex.emplace(std::make_pair(timestamp, key));
     this->index[key] = timestamp;
   }
+
+
+  void Storage::GetExpiredKeys(std::vector<KeyPtr> & result)
+  {
+    int64_t now = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::steady_clock::now()).time_since_epoch().count();
+
+    for (const auto & pair : this->rindex)
+    {
+      if (pair.first > now)
+      {
+        break;
+      }
+
+      result.emplace_back(pair.second);
+    }
+  }
 }

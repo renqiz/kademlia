@@ -28,6 +28,7 @@
 #pragma once
 
 #include <map>
+#include <vector>
 #include "Key.h"
 #include "Buffer.h"
 #include "PlatformUtils.h"
@@ -53,6 +54,8 @@ namespace kad
     BufferPtr Load(KeyPtr key) const;
 
     void Invalidate();
+
+    void GetExpiredKeys(std::vector<KeyPtr> & result);
 
   private:
 
